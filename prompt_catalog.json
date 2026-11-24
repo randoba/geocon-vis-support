@@ -1,0 +1,41 @@
+{
+  "task_instruction": "Your task is to classify the relationship between shapes in the QUERY image. Possible output classes are: alone, close, far, overlap. Determine which single class best matches the QUERY image.",
+  "response_format": "Always output strictly:\nPredicted relation: <alone|close|far|overlap>\nKey evidence: <1-2 bullets>",
+  "guidance_strategies": [
+    {
+      "name": "No guidance",
+      "strategy_preamble": "",
+      "relation_hints": {}
+    },
+    {
+      "name": "Definitions",
+      "strategy_preamble": "Use the labeled examples and their definitions to classify the QUERY image.",
+      "relation_hints": {
+        "alone": "One shape only.",
+        "close": "Two separate shapes, small gap.",
+        "far": "Two separate shapes, large gap.",
+        "overlap": "Shapes intersect/intrude."
+      }
+    },
+    {
+      "name": "Explicit comparison",
+      "strategy_preamble": "Use confusion-aware contrastive reasoning: explicitly compare QUERY against potentially confusable classes (close vs far, close vs overlap, alone vs all two-shape cases). Reject classes using visual counter-evidence, then decide.",
+      "relation_hints": {
+        "alone": "Look at the alone examples. Each shows one shape. Now compare with the close, far, and overlap examples; they all show two shapes. In your QUERY image, do you see one shape or two? If there are two shapes, reject alone.",
+        "close": "The close examples show two shapes with a small gap between them. Look at the far examples to see how it differs, the shapes are much further apart. Look at overlap too, where shapes actually intersect. In your QUERY, is the gap small like close, or larger like far? Do the shapes stay separate like both close and far, or share an overlapping region? If the gap is small and shapes are separate, it's close.",
+        "far": "The far examples show two shapes far apart from each other. Compare with close, where shapes are much closer. Look at your QUERY: are the shapes separated by a large distance like far, or a small distance like close? Are they separate or do they share an overlapping region?",
+        "overlap": "The overlap examples show shapes that intersect or intrude into each other, sharing a region of nonzero area. The close examples look similar at first glance because shapes are also near each other, but in close they stay completely separate. In your QUERY, do the shapes share an overlapping region, or do they stay apart? Boundary contact alone is not overlap."
+      }
+    },
+    {
+      "name": "Perceptual",
+      "strategy_preamble": "Classify the visual relation by its perceptual grouping and independence cues.",
+      "relation_hints": {
+        "alone": "Alone means that the image contains one independent visual item. There is no second shape that could form a pair, group, contact, or shared region with it.",
+        "close": "Close means that two shapes are still separate, but they visually belong to the same local group. They are near enough to be perceived together, as a pair or small cluster, without sharing space.",
+        "far": "Far means that two shapes are separate and visually independent. They do not form a local group; the main impression is separation rather than togetherness.",
+        "overlap": "Overlap means that the shapes are no longer fully independent in space. One shape intrudes into the visual region of the other, so they appear partially fused or spatially entangled."
+      }
+    }
+  ]
+}
